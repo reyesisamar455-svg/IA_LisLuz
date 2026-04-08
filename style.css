@@ -1,14 +1,75 @@
-body {
-  background: #111;
-  color: white;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: Arial;
-  text-align: center;
 }
 
+body {
+  background: #343541;
+  color: white;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* HEADER */
+header {
+  background: #202123;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* CHAT */
 #chat {
-  height: 300px;
+  flex: 1;
   overflow-y: auto;
-  border: 1px solid white;
-  margin: 10px;
   padding: 10px;
 }
+
+/* MENSAJES */
+.msg {
+  max-width: 80%;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  word-wrap: break-word;
+}
+
+.user {
+  background: #0b93f6;
+  margin-left: auto;
+}
+
+.bot {
+  background: #444654;
+  margin-right: auto;
+}
+
+/* INPUT */
+.input-box {
+  display: flex;
+  padding: 10px;
+  background: #202123;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+}
+
+.input-box button {
+  margin-left: 5px;
+  padding: 10px;
+  border: none;
+  background: #19c37d;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;

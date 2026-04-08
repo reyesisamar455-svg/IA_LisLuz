@@ -9,20 +9,20 @@ async function buscarWeb(query) {
 
     let respuesta = "";
 
-    // 🧠 explicación mejorada
+    // 🧠 explicación principal
     if (data.AbstractText) {
-        respuesta += "🧠 " + data.AbstractText + "\n\n";
+        respuesta += "🧠 " + data.AbstractText + "<br><br>";
     }
 
     // 🔗 link principal
     if (data.AbstractURL) {
-        respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Abrir fuente</a>\n\n";
+        respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Abrir fuente</a><br><br>";
     }
 
     // 📚 más resultados
     if (data.RelatedTopics && data.RelatedTopics.length > 0) {
 
-        respuesta += "📚 Más info:\n\n";
+        respuesta += "📚 Más info:<br><br>";
 
         let count = 0;
 
@@ -68,6 +68,7 @@ async function enviar() {
 
     agregarMensaje(msg, "user");
 
+    // mensaje de carga
     let loading = document.createElement("div");
     loading.className = "msg bot";
     loading.innerText = "🔍 Buscando en internet...";
@@ -82,7 +83,7 @@ async function enviar() {
     input.value = "";
 }
 
-// ENTER
+// ENTER para enviar
 document.getElementById("input").addEventListener("keypress", function(e) {
     if (e.key === "Enter") enviar();
 });

@@ -94,12 +94,13 @@ function iaLocal(query) {
 
     if (query.includes("delta")) {
     return `
-    ⚠️ Delta Executor:<br><br>
-    🔗 <a href="https://delta-executor.com/" target="_blank">Abrir página</a><br><br>
-    ❗ Cuidado: hay muchas páginas falsas y puede ser riesgoso
+    Delta Executor:<br><br>
+    <a href="https://delta-executor.com/" target="_blank">Abrir página</a><br><br>
+     
+     Cuidado: hay muchas páginas falsas y puede ser riesgoso
     `;
     }
-    return "🤖 No tengo una respuesta exacta pero puedes buscar más abajo 👇";
+    return "No tengo una respuesta exacta pero puedes buscar más abajo";
 }
 
 // 🧠 RESPUESTA FINAL

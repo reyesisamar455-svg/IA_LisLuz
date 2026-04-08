@@ -2,43 +2,117 @@
 function limpiar(msg) {
     return msg.toLowerCase()
         .replace(/[¿?]/g, "")
+        .replace("qué es", "")
+        .replace("para que sirve", "")
+        .replace("para qué sirve", "")
         .trim();
 }
 
-// 🌐 RESPUESTA TIPO CHROME
-function buscarChrome(query) {
+// 🌐 1. DUCKDUCKGO
+async function buscarDuck(query) {
+    try {
+        let url = "https://api.duckduckgo.com/?q=" 
+            + encodeURIComponent(query) 
+            + "&format=json&no_html=1&skip_disambig=1";
 
+        let res = await fetch(url);
+        let data = await res.json();
+
+        if (data.AbstractText && data.AbstractText.length > 20) {
+            return `
+            🧠 ${data.AbstractText}<br><br>
+            🔗 <a href="${data.AbstractURL}" target="_blank">Fuente</a>
+            `;
+        }
+
+        // RelatedTopics extra
+        if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+
+            let respuesta = "📚 Info:<br><br>";
+            let count = 0;
+
+            for (let item of data.RelatedTopics) {
+                if (item.Text && item.FirstURL && count < 3) {
+                    respuesta += `• ${item.Text}<br>`;
+                    respuesta += `<a href="${item.FirstURL}" target="_blank">Ver</a><br><br>`;
+                    count++;
+                }
+            }
+
+            if (count > 0) return respuesta;
+        }
+
+    } catch (e) {}
+
+    return null;
+}
+
+// 📚 2. WIKIPEDIA
+async function buscarWiki(query) {
+    try {
+        let url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+        let res = await fetch(url);
+        let data = await res.json();
+
+        if (data.extract) {
+            return `
+            📚 ${data.extract}<br><br>
+            🔗 <a href="${data.content_urls.desktop.page}" target="_blank">Leer más</a>
+            `;
+        }
+    } catch (e) {}
+
+    return null;
+}
+
+// 🔎 3. GOOGLE LINKS
+function linksGoogle(query) {
     let q = encodeURIComponent(query);
 
     return `
-    🔎 Resultados en Chrome:<br><br>
-
-    🌐 <a href="https://www.google.com/search?q=${q}" target="_blank">Buscar en Google</a><br><br>
-
-    📚 <a href="https://es.wikipedia.org/wiki/${q}" target="_blank">Wikipedia</a><br><br>
-
-    🎥 <a href="https://www.youtube.com/results?search_query=${q}" target="_blank">YouTube</a><br><br>
-
-    💡 Consejo: abre Google para ver resultados completos 😈
+    🌐 Más resultados:<br><br>
+    • <a href="https://www.google.com/search?q=${q}" target="_blank">Google</a><br>
+    • <a href="https://es.wikipedia.org/wiki/${q}" target="_blank">Wikipedia</a><br>
+    • <a href="https://www.youtube.com/results?search_query=${q}" target="_blank">YouTube</a>
     `;
 }
 
-// 🤖 RESPONDER
-function responder(msg) {
+// 🤖 4. IA FALLBACK
+function iaLocal(query) {
+
+    if (query.includes("ia")) {
+        return "La inteligencia artificial permite a las máquinas aprender y tomar decisiones 😈";
+    }
+
+    if (query.includes("roblox")) {
+        return "Roblox sirve para crear y jugar juegos creados por usuarios 🎮";
+    }
+
+    if (query.includes("minecraft")) {
+        return "Minecraft es un juego de construcción y supervivencia ⛏️";
+    }
+
+    return "🤖 No tengo una respuesta exacta pero puedes buscar más abajo 👇";
+}
+
+// 🧠 RESPUESTA FINAL
+async function responder(msg) {
 
     let limpio = limpiar(msg);
 
-    // respuestas básicas
-    if (limpio.includes("hola")) {
-        return "Hola 😈 soy Lisluz IA";
-    }
+    // 1️⃣ DuckDuckGo
+    let duck = await buscarDuck(limpio);
+    if (duck) return duck;
 
-    if (limpio.includes("quien eres")) {
-        return "Soy una IA que busca como Chrome 😈";
-    }
+    // 2️⃣ Wikipedia
+    let wiki = await buscarWiki(limpio);
+    if (wiki) return wiki;
 
-    // 🔥 búsqueda real
-    return buscarChrome(limpio);
+    // 3️⃣ IA fallback + Google links
+    return `
+    ${iaLocal(limpio)}<br><br>
+    ${linksGoogle(limpio)}
+    `;
 }
 
 // 💬 MENSAJES
@@ -56,7 +130,7 @@ function agregarMensaje(texto, tipo) {
 }
 
 // 🚀 ENVIAR
-function enviar() {
+async function enviar() {
 
     let input = document.getElementById("input");
     let msg = input.value.trim();
@@ -67,17 +141,14 @@ function enviar() {
 
     let loading = document.createElement("div");
     loading.className = "msg bot";
-    loading.innerText = "🌐 Buscando en Chrome...";
+    loading.innerText = "🧠 Buscando en todas las fuentes...";
     document.getElementById("chat").appendChild(loading);
 
-    setTimeout(() => {
+    let res = await responder(msg);
 
-        loading.remove();
+    loading.remove();
 
-        let res = responder(msg);
-        agregarMensaje(res, "bot");
-
-    }, 500);
+    agregarMensaje(res, "bot");
 
     input.value = "";
 }

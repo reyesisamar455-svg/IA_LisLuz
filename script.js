@@ -8,7 +8,7 @@ function limpiar(msg) {
         .trim();
 }
 
-// 🌐 1. DUCKDUCKGO
+// 🌐 DUCKDUCKGO
 async function buscarDuck(query) {
     try {
         let url = "https://api.duckduckgo.com/?q=" 
@@ -19,27 +19,19 @@ async function buscarDuck(query) {
         let data = await res.json();
 
         if (data.AbstractText && data.AbstractText.length > 20) {
-            return `
-            🧠 ${data.AbstractText}<br><br>
-            🔗 <a href="${data.AbstractURL}" target="_blank">Fuente</a>
-            `;
+            return data.AbstractText;
         }
 
-        // RelatedTopics extra
         if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-
-            let respuesta = "📚 Info:<br><br>";
-            let count = 0;
+            let textos = [];
 
             for (let item of data.RelatedTopics) {
-                if (item.Text && item.FirstURL && count < 3) {
-                    respuesta += `• ${item.Text}<br>`;
-                    respuesta += `<a href="${item.FirstURL}" target="_blank">Ver</a><br><br>`;
-                    count++;
+                if (item.Text && textos.length < 3) {
+                    textos.push(item.Text);
                 }
             }
 
-            if (count > 0) return respuesta;
+            return textos.join("\n");
         }
 
     } catch (e) {}
@@ -47,60 +39,44 @@ async function buscarDuck(query) {
     return null;
 }
 
-// 📚 2. WIKIPEDIA
+// 📚 WIKIPEDIA
 async function buscarWiki(query) {
     try {
         let url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
         let res = await fetch(url);
         let data = await res.json();
 
-        if (data.extract) {
-            return `
-            📚 ${data.extract}<br><br>
-            🔗 <a href="${data.content_urls.desktop.page}" target="_blank">Leer más</a>
-            `;
-        }
+        if (data.extract) return data.extract;
+
     } catch (e) {}
 
     return null;
 }
 
-// 🔎 3. GOOGLE LINKS
+// 🤖 ESTILO IA
+function estiloIA(texto, pregunta) {
+
+    return `
+🤖 <b>Respuesta:</b><br><br>
+
+👉 <b>${pregunta}</b><br><br>
+
+🧠 ${texto}<br><br>
+
+💬 ¿Quieres que lo explique mejor? 😈
+`;
+}
+
+// 🔎 LINKS EXTRA
 function linksGoogle(query) {
     let q = encodeURIComponent(query);
 
     return `
-    🌐 Más resultados:<br><br>
-    • <a href="https://www.google.com/search?q=${q}" target="_blank">Google</a><br>
-    • <a href="https://es.wikipedia.org/wiki/${q}" target="_blank">Wikipedia</a><br>
-    • <a href="https://www.youtube.com/results?search_query=${q}" target="_blank">YouTube</a>
-    `;
-}
-
-// 🤖 4. IA FALLBACK
-function iaLocal(query) {
-
-    if (query.includes("ia")) {
-        return "La inteligencia artificial permite a las máquinas aprender y tomar decisiones 😈";
-    }
-
-    if (query.includes("roblox")) {
-        return "Roblox sirve para crear y jugar juegos creados por usuarios 🎮";
-    }
-
-    if (query.includes("minecraft")) {
-        return "Minecraft es un juego de construcción y supervivencia ⛏️";
-    }
-
-    if (query.includes("delta")) {
-    return `
-    Delta Executor:<br><br>
-    <a href="https://delta-executor.com/" target="_blank">Abrir página</a><br><br>
-     
-     Cuidado: hay muchas páginas falsas y puede ser riesgoso
-    `;
-    }
-    return "No tengo una respuesta exacta pero puedes buscar más abajo";
+🌐 Más resultados:<br><br>
+<a href="https://www.google.com/search?q=${q}" target="_blank">Google</a><br>
+<a href="https://es.wikipedia.org/wiki/${q}" target="_blank">Wikipedia</a><br>
+<a href="https://www.youtube.com/results?search_query=${q}" target="_blank">YouTube</a>
+`;
 }
 
 // 🧠 RESPUESTA FINAL
@@ -108,19 +84,27 @@ async function responder(msg) {
 
     let limpio = limpiar(msg);
 
-    // 1️⃣ DuckDuckGo
     let duck = await buscarDuck(limpio);
-    if (duck) return duck;
-
-    // 2️⃣ Wikipedia
     let wiki = await buscarWiki(limpio);
-    if (wiki) return wiki;
 
-    // 3️⃣ IA fallback + Google links
-    return `
-    ${iaLocal(limpio)}<br><br>
-    ${linksGoogle(limpio)}
-    `;
+    let respuesta = "";
+
+    if (duck) {
+        respuesta += duck + "<br><br>";
+    }
+
+    if (wiki) {
+        respuesta += wiki + "<br><br>";
+    }
+
+    if (!respuesta) {
+        return `
+🤖 No encontré información exacta 😅<br><br>
+${linksGoogle(limpio)}
+`;
+    }
+
+    return estiloIA(respuesta, msg);
 }
 
 // 💬 MENSAJES
@@ -130,7 +114,6 @@ function agregarMensaje(texto, tipo) {
 
     let div = document.createElement("div");
     div.className = "msg " + tipo;
-
     div.innerHTML = texto;
 
     chat.appendChild(div);
@@ -149,7 +132,7 @@ async function enviar() {
 
     let loading = document.createElement("div");
     loading.className = "msg bot";
-    loading.innerText = "🧠 Buscando en todas las fuentes...";
+    loading.innerText = "🧠 Pensando...";
     document.getElementById("chat").appendChild(loading);
 
     let res = await responder(msg);

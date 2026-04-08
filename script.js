@@ -1,77 +1,47 @@
-// 🧠 LIMPIAR MENSAJE
+// 🧠 LIMPIAR TEXTO
 function limpiar(msg) {
     return msg.toLowerCase()
         .replace(/[¿?]/g, "")
-        .replace("qué es", "")
-        .replace("para que sirve", "")
-        .replace("para qué sirve", "")
         .trim();
 }
 
-// 🌐 BUSCAR EN INTERNET (3 NIVELES)
-async function buscarWeb(query) {
+// 🌐 RESPUESTA TIPO CHROME
+function buscarChrome(query) {
 
-    let url = "https://api.duckduckgo.com/?q=" 
-        + encodeURIComponent(query) 
-        + "&format=json&no_html=1&skip_disambig=1";
+    let q = encodeURIComponent(query);
 
-    let res = await fetch(url);
-    let data = await res.json();
-
-    // 🧠 NIVEL 1: RESPUESTA DIRECTA
-    if (data.AbstractText && data.AbstractText.length > 20) {
-        return `
-        🧠 ${data.AbstractText}<br><br>
-        🔗 <a href="${data.AbstractURL}" target="_blank">Abrir fuente</a>
-        `;
-    }
-
-    // 📚 NIVEL 2: RESULTADOS RELACIONADOS
-    if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-
-        let respuesta = "📚 Información:<br><br>";
-        let count = 0;
-
-        for (let item of data.RelatedTopics) {
-            if (item.Text && item.FirstURL && count < 3) {
-                respuesta += `• ${item.Text}<br>`;
-                respuesta += `<a href="${item.FirstURL}" target="_blank">Ver</a><br><br>`;
-                count++;
-            }
-        }
-
-        if (count > 0) return respuesta;
-    }
-
-    // 🔎 NIVEL 3: BÚSQUEDA EXTERNA
     return `
-    🤖 No encontré exacto 😅<br><br>
-    🔎 Buscar en:<br>
-    • <a href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank">Google</a><br>
-    • <a href="https://es.wikipedia.org/wiki/${encodeURIComponent(query)}" target="_blank">Wikipedia</a><br>
-    • <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(query)}" target="_blank">YouTube</a>
+    🔎 Resultados en Chrome:<br><br>
+
+    🌐 <a href="https://www.google.com/search?q=${q}" target="_blank">Buscar en Google</a><br><br>
+
+    📚 <a href="https://es.wikipedia.org/wiki/${q}" target="_blank">Wikipedia</a><br><br>
+
+    🎥 <a href="https://www.youtube.com/results?search_query=${q}" target="_blank">YouTube</a><br><br>
+
+    💡 Consejo: abre Google para ver resultados completos 😈
     `;
 }
 
 // 🤖 RESPONDER
-async function responder(msg) {
+function responder(msg) {
 
     let limpio = limpiar(msg);
 
-    // respuestas rápidas (tipo IA básica)
+    // respuestas básicas
     if (limpio.includes("hola")) {
         return "Hola 😈 soy Lisluz IA";
     }
 
     if (limpio.includes("quien eres")) {
-        return "Soy una IA que busca en internet y responde 😈";
+        return "Soy una IA que busca como Chrome 😈";
     }
 
-    // 🌐 WEB
-    return await buscarWeb(limpio);
+    // 🔥 búsqueda real
+    return buscarChrome(limpio);
 }
 
-// 💬 MOSTRAR MENSAJES
+// 💬 MENSAJES
 function agregarMensaje(texto, tipo) {
 
     let chat = document.getElementById("chat");
@@ -86,7 +56,7 @@ function agregarMensaje(texto, tipo) {
 }
 
 // 🚀 ENVIAR
-async function enviar() {
+function enviar() {
 
     let input = document.getElementById("input");
     let msg = input.value.trim();
@@ -97,14 +67,17 @@ async function enviar() {
 
     let loading = document.createElement("div");
     loading.className = "msg bot";
-    loading.innerText = "🧠 Pensando...";
+    loading.innerText = "🌐 Buscando en Chrome...";
     document.getElementById("chat").appendChild(loading);
 
-    let res = await responder(msg);
+    setTimeout(() => {
 
-    loading.remove();
+        loading.remove();
 
-    agregarMensaje(res, "bot");
+        let res = responder(msg);
+        agregarMensaje(res, "bot");
+
+    }, 500);
 
     input.value = "";
 }

@@ -9,38 +9,39 @@ async function buscarWeb(query) {
 
     let respuesta = "";
 
-    // 🧠 explicación principal
-    if (data.AbstractText) {
+    // 🧠 1. EXPLICACIÓN PRINCIPAL
+    if (data.AbstractText && data.AbstractText.length > 10) {
         respuesta += "🧠 " + data.AbstractText + "<br><br>";
     }
 
-    // 🔗 link principal
+    // 🔗 2. LINK PRINCIPAL
     if (data.AbstractURL) {
         respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Abrir fuente</a><br><br>";
     }
 
-    // 📚 más resultados
+    // 📚 3. RESULTADOS RELACIONADOS (MEJORADO)
+    let encontrados = 0;
+
     if (data.RelatedTopics && data.RelatedTopics.length > 0) {
 
         respuesta += "📚 Más info:<br><br>";
 
-        let count = 0;
-
         data.RelatedTopics.forEach(item => {
 
-            if (item.Text && item.FirstURL && count < 5) {
+            if (item.Text && item.FirstURL && encontrados < 5) {
 
                 respuesta += "• " + item.Text + "<br>";
                 respuesta += "<a href='" + item.FirstURL + "' target='_blank'>Ver</a><br><br>";
 
-                count++;
+                encontrados++;
             }
 
         });
     }
 
-    if (!respuesta) {
-        return "❌ No encontré info 😅 intenta algo más específico";
+    // 🧠 4. SI NO ENCUENTRA NADA → RESPUESTA INTELIGENTE
+    if (!respuesta || respuesta.length < 20) {
+        return "🤖 No encontré info directa 😅<br><br>👉 Intenta escribir más específico como:<br>• qué es Roblox<br>• para qué sirve la IA<br>• historia de Minecraft";
     }
 
     return respuesta;
@@ -68,10 +69,9 @@ async function enviar() {
 
     agregarMensaje(msg, "user");
 
-    // mensaje de carga
     let loading = document.createElement("div");
     loading.className = "msg bot";
-    loading.innerText = "🔍 Buscando en internet...";
+    loading.innerText = "🔍 Buscando mejor info...";
     document.getElementById("chat").appendChild(loading);
 
     let respuesta = await buscarWeb(msg);
@@ -83,7 +83,7 @@ async function enviar() {
     input.value = "";
 }
 
-// ENTER para enviar
+// ENTER
 document.getElementById("input").addEventListener("keypress", function(e) {
     if (e.key === "Enter") enviar();
 });

@@ -9,24 +9,24 @@ async function buscarWeb(query) {
 
     let respuesta = "";
 
-    // 🧠 EXPLICACIÓN PRINCIPAL
+    // 🧠 explicación principal
     if (data.AbstractText) {
         respuesta += "🧠 " + data.AbstractText + "\n\n";
     }
 
-    // 🔗 LINK PRINCIPAL
+    // 🔗 link principal
     if (data.AbstractURL) {
-        respuesta += "🔗 Leer más: " + data.AbstractURL + "\n\n";
+        respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Leer más</a>\n\n";
     }
 
-    // 📚 RESULTADOS RELACIONADOS
+    // 📚 resultados relacionados
     if (data.RelatedTopics && data.RelatedTopics.length > 0) {
         respuesta += "📚 Más resultados:\n";
 
         data.RelatedTopics.slice(0, 3).forEach(item => {
             if (item.Text && item.FirstURL) {
                 respuesta += "• " + item.Text + "\n";
-                respuesta += item.FirstURL + "\n\n";
+                respuesta += "<a href='" + item.FirstURL + "' target='_blank'>Abrir</a>\n\n";
             }
         });
     }
@@ -45,7 +45,6 @@ function agregarMensaje(texto, tipo) {
     let div = document.createElement("div");
     div.className = "msg " + tipo;
 
-    // permitir links clicables
     div.innerHTML = texto.replace(/\n/g, "<br>");
 
     chat.appendChild(div);
@@ -71,3 +70,8 @@ async function enviar() {
 
     input.value = "";
 }
+
+// ENTER para enviar 😈
+document.getElementById("input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") enviar();
+});

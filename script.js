@@ -1,4 +1,4 @@
-const API_KEY = "TU_API_KEY_AQUI";
+const API_KEY = "AIzaSyCq8nSfLRtgRuceTwWd52JHjH1CmA_Ey-E";
 
 // 🧠 MEMORIA (chat real)
 let historial = [

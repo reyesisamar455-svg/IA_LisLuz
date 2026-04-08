@@ -7,44 +7,44 @@ async function buscarWeb(query) {
     let res = await fetch(url);
     let data = await res.json();
 
-    let respuesta = "";
-
-    // 🧠 1. EXPLICACIÓN PRINCIPAL
-    if (data.AbstractText && data.AbstractText.length > 10) {
-        respuesta += "🧠 " + data.AbstractText + "<br><br>";
+    // 🧠 NIVEL 1: RESPUESTA PRINCIPAL
+    if (data.AbstractText && data.AbstractText.length > 20) {
+        return `
+        🧠 ${data.AbstractText}<br><br>
+        🔗 <a href="${data.AbstractURL}" target="_blank">Abrir fuente</a>
+        `;
     }
 
-    // 🔗 2. LINK PRINCIPAL
-    if (data.AbstractURL) {
-        respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Abrir fuente</a><br><br>";
-    }
-
-    // 📚 3. RESULTADOS RELACIONADOS (MEJORADO)
-    let encontrados = 0;
-
+    // 📚 NIVEL 2: TEMAS RELACIONADOS
     if (data.RelatedTopics && data.RelatedTopics.length > 0) {
 
-        respuesta += "📚 Más info:<br><br>";
+        let respuesta = "📚 Información encontrada:<br><br>";
+        let count = 0;
 
-        data.RelatedTopics.forEach(item => {
+        for (let item of data.RelatedTopics) {
 
-            if (item.Text && item.FirstURL && encontrados < 5) {
+            if (item.Text && item.FirstURL) {
 
-                respuesta += "• " + item.Text + "<br>";
-                respuesta += "<a href='" + item.FirstURL + "' target='_blank'>Ver</a><br><br>";
+                respuesta += `• ${item.Text}<br>`;
+                respuesta += `<a href="${item.FirstURL}" target="_blank">Ver</a><br><br>`;
 
-                encontrados++;
+                count++;
+
+                if (count >= 3) break;
             }
+        }
 
-        });
+        if (count > 0) return respuesta;
     }
 
-    // 🧠 4. SI NO ENCUENTRA NADA → RESPUESTA INTELIGENTE
-    if (!respuesta || respuesta.length < 20) {
-        return "🤖 No encontré info directa 😅<br><br>👉 Intenta escribir más específico como:<br>• qué es Roblox<br>• para qué sirve la IA<br>• historia de Minecraft";
-    }
-
-    return respuesta;
+    // 🔎 NIVEL 3: LINKS GENERALES
+    return `
+    🤖 No encontré explicación directa 😅<br><br>
+    🔎 Busca aquí:<br>
+    • <a href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank">Google</a><br>
+    • <a href="https://es.wikipedia.org/wiki/${encodeURIComponent(query)}" target="_blank">Wikipedia</a><br>
+    • <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(query)}" target="_blank">YouTube</a>
+    `;
 }
 
 function agregarMensaje(texto, tipo) {
@@ -71,7 +71,7 @@ async function enviar() {
 
     let loading = document.createElement("div");
     loading.className = "msg bot";
-    loading.innerText = "🔍 Buscando mejor info...";
+    loading.innerText = "🔍 Buscando...";
     document.getElementById("chat").appendChild(loading);
 
     let respuesta = await buscarWeb(msg);

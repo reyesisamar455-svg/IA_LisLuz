@@ -73,3 +73,11 @@ header {
   color: white;
   border-radius: 5px;
   cursor: pointer;
+a {
+  color: #19c37d;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

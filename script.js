@@ -92,6 +92,11 @@ function iaLocal(query) {
         return "Minecraft es un juego de construcción y supervivencia ⛏️";
     }
 
+    if (query.includes("Delta ejecutor")) {
+        return "página oficial";
+        return "• <a href="https://www.google.com/search?q=${q}" target="_blank">Google</a><br>";
+    }
+
     return "🤖 No tengo una respuesta exacta pero puedes buscar más abajo 👇";
 }
 

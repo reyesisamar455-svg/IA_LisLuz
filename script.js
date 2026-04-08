@@ -1,89 +1,181 @@
-const API_KEY = "AIzaSyCq8nSfLRtgRuceTwWd52JHjH1CmA_Ey-E";
+// 🧠 MEMORIA (aprende sola)
+let memoria = JSON.parse(localStorage.getItem("memoria")) || [];
 
-// 🧠 MEMORIA (chat real)
-let historial = [
-  {
-    role: "user",
-    parts: [{ text: "Eres Lisluz IA 👑, una IA inteligente como ChatGPT. Responde claro, útil y como humano." }]
-  }
-];
+// 🧠 GUARDAR MEMORIA
+function guardar() {
+    localStorage.setItem("memoria", JSON.stringify(memoria));
+}
 
-// 🤖 PREGUNTAR A GEMINI
-async function preguntar(msg) {
+// 🧠 APRENDER
+function aprender(codigo) {
+    memoria.push(codigo);
+    guardar();
+}
 
-  historial.push({
-    role: "user",
-    parts: [{ text: msg }]
-  });
+// 🧠 ANALIZAR CÓDIGO
+function analizarCodigo(codigo) {
+    return {
+        gui: codigo.includes("ScreenGui"),
+        boton: codigo.includes("TextButton"),
+        tool: codigo.includes("Tool"),
+        jugador: codigo.includes("Players"),
+        daño: codigo.includes("Humanoid")
+    };
+}
 
-  let res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: historial
-      })
+// 🤖 GENERAR DESDE MEMORIA
+function generarDesdeMemoria(msg) {
+
+    msg = msg.toLowerCase();
+
+    let resultado = [];
+
+    for (let codigo of memoria) {
+
+        let d = analizarCodigo(codigo);
+
+        if (msg.includes("gui") && d.gui) resultado.push(codigo);
+        if (msg.includes("boton") && d.boton) resultado.push(codigo);
+        if (msg.includes("tool") && d.tool) resultado.push(codigo);
+        if (msg.includes("jugador") && d.jugador) resultado.push(codigo);
+        if (msg.includes("daño") && d.daño) resultado.push(codigo);
     }
-  );
 
-  let data = await res.json();
+    if (resultado.length === 0) {
+        return "// 🤖 No sé aún 😅 enséñame código";
+    }
 
-  // ⚠️ evitar errores
-  if (!data.candidates) {
-    return "❌ Error con la API 😅 revisa tu API KEY";
-  }
+    return resultado.join("\n\n");
+}
 
-  let texto = data.candidates[0].content.parts[0].text;
+// 🧠 GENERADOR BÁSICO AUTOMÁTICO
+function generarBasico(msg) {
 
-  historial.push({
-    role: "model",
-    parts: [{ text: texto }]
-  });
+    msg = msg.toLowerCase();
 
-  return texto;
+    let code = [];
+
+    if (msg.includes("gui")) {
+        code.push(`
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+`);
+    }
+
+    if (msg.includes("boton")) {
+        code.push(`
+local btn = Instance.new("TextButton")
+btn.Text = "Click"
+btn.Parent = gui
+
+btn.MouseButton1Click:Connect(function()
+    print("Click 😈")
+end)
+`);
+    }
+
+    if (msg.includes("tool")) {
+        code.push(`
+local tool = Instance.new("Tool")
+tool.Parent = game.Players.LocalPlayer:WaitForChild("Backpack")
+`);
+    }
+
+    if (msg.includes("moneda")) {
+        let num = (msg.match(/\d+/) || [0])[0];
+
+        code.push(`
+local Players = game:GetService("Players")
+
+Players.PlayerAdded:Connect(function(player)
+
+    local leaderstats = Instance.new("Folder")
+    leaderstats.Name = "leaderstats"
+    leaderstats.Parent = player
+
+    local coins = Instance.new("IntValue")
+    coins.Name = "Coins"
+    coins.Value = ${num}
+    coins.Parent = leaderstats
+
+end)
+`);
+    }
+
+    return code.join("\n");
+}
+
+// 🧠 DEBUGGER
+function corregirCodigo(code) {
+
+    let fix = code;
+
+    fix = fix.replace("game.Players.LocalPlayer.Backpack",
+        "game.Players.LocalPlayer:WaitForChild('Backpack')");
+
+    fix = fix.replace("FindFirstChild(", "WaitForChild(");
+
+    return fix;
+}
+
+// 🤖 IA PRINCIPAL
+function IA(msg) {
+
+    // 👉 si es código → aprende
+    if (msg.includes("local") || msg.includes("Instance.new")) {
+        aprender(msg);
+        return "// 🧠 Aprendido 😈";
+    }
+
+    // 👉 intenta generar desde memoria
+    let res = generarDesdeMemoria(msg);
+
+    if (!res.includes("No sé")) {
+        return corregirCodigo(res);
+    }
+
+    // 👉 si no sabe → generar básico
+    let auto = generarBasico(msg);
+
+    if (auto) {
+        aprender(auto);
+        return corregirCodigo(auto);
+    }
+
+    return "// 🤖 No entendí 😅 intenta algo mejor";
 }
 
 // 💬 MENSAJES
 function agregarMensaje(texto, tipo) {
 
-  let chat = document.getElementById("chat");
+    let chat = document.getElementById("chat");
 
-  let div = document.createElement("div");
-  div.className = "msg " + tipo;
-  div.innerText = texto;
+    let div = document.createElement("div");
+    div.className = "msg " + tipo;
+    div.innerText = texto;
 
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
 }
 
 // 🚀 ENVIAR
-async function enviar() {
+function enviar() {
 
-  let input = document.getElementById("input");
-  let msg = input.value.trim();
+    let input = document.getElementById("input");
+    let msg = input.value.trim();
 
-  if (!msg) return;
+    if (!msg) return;
 
-  agregarMensaje(msg, "user");
+    agregarMensaje(msg, "user");
 
-  let loading = document.createElement("div");
-  loading.className = "msg bot";
-  loading.innerText = "🧠 Pensando...";
-  document.getElementById("chat").appendChild(loading);
+    let res = IA(msg);
 
-  let res = await preguntar(msg);
+    agregarMensaje(res, "bot");
 
-  loading.remove();
-
-  agregarMensaje(res, "bot");
-
-  input.value = "";
+    input.value = "";
 }
 
 // ENTER
 document.getElementById("input").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") enviar();
+    if (e.key === "Enter") enviar();
 });

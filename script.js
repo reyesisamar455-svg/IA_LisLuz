@@ -1,38 +1,40 @@
-let memoria = JSON.parse(localStorage.getItem("memoria")) || {};
+async function buscarWeb(query) {
 
-function responder(msg) {
+    let url = "https://api.duckduckgo.com/?q=" 
+        + encodeURIComponent(query) 
+        + "&format=json&no_html=1";
 
-    msg = msg.toLowerCase();
+    let res = await fetch(url);
+    let data = await res.json();
 
-    if (memoria[msg]) return memoria[msg];
+    // respuesta inteligente
+    if (data.AbstractText) return data.AbstractText;
 
-    if (msg.includes("hola")) return "Hola 😈 soy Lisluz";
+    if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+        return data.RelatedTopics[0].Text;
+    }
 
-    if (msg.includes("kit")) return "Usa /kit minero";
-
-    return "No sé 😅 enséñame";
+    return "No encontré nada 😅";
 }
 
-function enviar() {
+async function enviar() {
 
     let input = document.getElementById("input");
     let chat = document.getElementById("chat");
 
-    let msg = input.value;
+    let msg = input.value.trim();
+    if (!msg) return;
 
-    chat.innerHTML += "<p>👤: " + msg + "</p>";
+    agregarMensaje(msg, "user");
 
-    let res = responder(msg);
+    agregarMensaje("Buscando... 🔍", "bot");
 
-    chat.innerHTML += "<p>🤖: " + res + "</p>";
+    let respuesta = await buscarWeb(msg);
 
-    if (res === "No sé 😅 enséñame") {
-        let nueva = prompt("¿Qué debo responder?");
-        if (nueva) {
-            memoria[msg.toLowerCase()] = nueva;
-            localStorage.setItem("memoria", JSON.stringify(memoria));
-        }
-    }
+    // quitar "Buscando..."
+    chat.lastChild.remove();
+
+    agregarMensaje(respuesta, "bot");
 
     input.value = "";
 }

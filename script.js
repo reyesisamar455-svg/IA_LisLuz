@@ -9,30 +9,38 @@ async function buscarWeb(query) {
 
     let respuesta = "";
 
-    // 🧠 explicación principal
+    // 🧠 explicación mejorada
     if (data.AbstractText) {
         respuesta += "🧠 " + data.AbstractText + "\n\n";
     }
 
     // 🔗 link principal
     if (data.AbstractURL) {
-        respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Leer más</a>\n\n";
+        respuesta += "🔗 <a href='" + data.AbstractURL + "' target='_blank'>Abrir fuente</a>\n\n";
     }
 
-    // 📚 resultados relacionados
+    // 📚 más resultados
     if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-        respuesta += "📚 Más resultados:\n";
 
-        data.RelatedTopics.slice(0, 3).forEach(item => {
-            if (item.Text && item.FirstURL) {
-                respuesta += "• " + item.Text + "\n";
-                respuesta += "<a href='" + item.FirstURL + "' target='_blank'>Abrir</a>\n\n";
+        respuesta += "📚 Más info:\n\n";
+
+        let count = 0;
+
+        data.RelatedTopics.forEach(item => {
+
+            if (item.Text && item.FirstURL && count < 5) {
+
+                respuesta += "• " + item.Text + "<br>";
+                respuesta += "<a href='" + item.FirstURL + "' target='_blank'>Ver</a><br><br>";
+
+                count++;
             }
+
         });
     }
 
     if (!respuesta) {
-        return "❌ No encontré info 😅 intenta otra pregunta";
+        return "❌ No encontré info 😅 intenta algo más específico";
     }
 
     return respuesta;
@@ -45,7 +53,7 @@ function agregarMensaje(texto, tipo) {
     let div = document.createElement("div");
     div.className = "msg " + tipo;
 
-    div.innerHTML = texto.replace(/\n/g, "<br>");
+    div.innerHTML = texto;
 
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
@@ -60,18 +68,21 @@ async function enviar() {
 
     agregarMensaje(msg, "user");
 
-    agregarMensaje("🔍 Buscando en internet...", "bot");
+    let loading = document.createElement("div");
+    loading.className = "msg bot";
+    loading.innerText = "🔍 Buscando en internet...";
+    document.getElementById("chat").appendChild(loading);
 
     let respuesta = await buscarWeb(msg);
 
-    document.getElementById("chat").lastChild.remove();
+    loading.remove();
 
     agregarMensaje(respuesta, "bot");
 
     input.value = "";
 }
 
-// ENTER para enviar 😈
+// ENTER
 document.getElementById("input").addEventListener("keypress", function(e) {
     if (e.key === "Enter") enviar();
 });

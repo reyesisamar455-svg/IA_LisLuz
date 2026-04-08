@@ -92,11 +92,15 @@ function iaLocal(query) {
         return "Minecraft es un juego de construcción y supervivencia ⛏️";
     }
 
-    if (query.includes("Delta ejecutor")) {
-        return "página oficial";
-        return "• <a href="https://www.google.com/search?q=${q}" target="_blank">Google</a><br>";
-    }
+    if (query.includes("delta")) {
+    let q = encodeURIComponent(query);
 
+    return `
+    🔥 Página oficial / descarga:<br><br>
+    • <a href="https://www.google.com/search?q=${q}" target="_blank">Buscar Delta Executor</a><br><br>
+    ⚠️ Ten cuidado con páginas falsas 😈
+    `;
+    }
     return "🤖 No tengo una respuesta exacta pero puedes buscar más abajo 👇";
 }
 

@@ -1,25 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lisluz IA</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>👑 Lisluz IA Pro</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+#chat {
+    height: 90vh;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.msg {
+    margin: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.user {
+    background: #1e293b;
+    margin-left: auto;
+}
+
+.bot {
+    background: #020617;
+}
+
+#barra {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+}
+
+input {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    outline: none;
+}
+
+button {
+    padding: 15px;
+    background: #22c55e;
+    border: none;
+    color: white;
+}
+</style>
+
 </head>
 <body>
 
-<div class="app">
+<h2 style="padding:10px;">👑 Lisluz IA (Aprende sola 😈)</h2>
 
-  <header>Lisluz IA</header>
+<div id="chat"></div>
 
-  <div id="chat"></div>
-
-  <div class="input-box">
-    <input id="input" placeholder="Escribe un mensaje..." />
+<div id="barra">
+    <input id="input" placeholder="Escribe código o pide algo...">
     <button onclick="enviar()">➤</button>
-  </div>
-
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
